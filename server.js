@@ -1,48 +1,31 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-let tokens = {};
 let votes = { "Candidate A": 0, "Candidate B": 0, "Candidate C": 0 };
-let usedPhones = new Set();
+let total = 0;
+let voters = new Set();
 
-app.get('/', (req,res) => res.redirect('/table1'));
+const votePage = <!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;style&gt; body{margin:0;font-family:Arial;background:linear-gradient(135deg,#7a8cff,#8e6cff);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:15px} .card{background:white;border-radius:24px;padding:30px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(0,0,0,0.2);text-align:center} input,select{width:100%;padding:14px;margin:10px 0;border-radius:12px;border:1px solid #ddd;box-sizing:border-box;font-size:15px} button{width:100%;padding:14px;background:#7a3cff;color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:16px} a{color:#7a3cff;text-decoration:none;font-size:14px;display:block;margin-top:15px} &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="card"&gt; &lt;h1&gt;MajorTech Voting&lt;/h1&gt;&lt;p&gt;Secure Student Election&lt;/p&gt; &lt;input id="phone" placeholder="Enter Phone Number"&gt; &lt;select id="cand"&gt;&lt;option&gt;Candidate A&lt;/option&gt;&lt;option&gt;Candidate B&lt;/option&gt;&lt;option&gt;Candidate C&lt;/option&gt;&lt;/select&gt; &lt;button onclick="vote()"&gt;Cast Vote&lt;/button&gt; &lt;p id="msg" style="color:red"&gt;&lt;/p&gt; &lt;a href="/dashboard"&gt;Faculty Login → Live Results&lt;/a&gt; &lt;/div&gt;&lt;script&gt; async function vote(){ let p=document.getElementById('phone').value; let c=document.getElementById('cand').value; if(!p){document.getElementById('msg').innerText='Enter phone';return;} let r=await fetch('/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:p,candidate:c})}); let d=await r.json(); if(d.error) document.getElementById('msg').innerText=d.error; else {document.getElementById('msg').style.color='green';document.getElementById('msg').innerText='Vote counted!'; setTimeout(()=&gt;location.href='/results',1000);} } &lt;/script&gt;&lt;/body&gt;&lt;/html>;
 
-app.get('/table1', (req,res) => {
-res.send(&lt;html&gt;&lt;head&gt;&lt;title&gt;TABLE 1&lt;/title&gt; &lt;style&gt;body{font-family:Arial;background:#f0f4ff;padding:20px}.box{background:white;max-width:400px;margin:auto;padding:30px;border-radius:10px;box-shadow:0 2px 10px #0002} input{width:100%;padding:12px;margin:10px 0} button{width:100%;padding:12px;background:#2563eb;color:white;border:0;border-radius:6px;font-size:16px}&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;div class="box"&gt;&lt;h2 style="color:#2563eb"&gt;TABLE 1 - Token Generator&lt;/h2&gt; &lt;input id="phone" placeholder="Enter Phone like 037-2025-26" /&gt; &lt;button onclick="gen()"&gt;Generate Token&lt;/button&gt; &lt;div id="out" style="margin-top:20px;font-weight:bold"&gt;&lt;/div&gt; &lt;script&gt; async function gen(){ const phone=document.getElementById('phone').value; const r=await fetch('/api/generate-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})}); const d=await r.json(); document.getElementById('out').innerHTML = d.token? 'TOKEN: '+d.token : 'Error: '+d.error; } &lt;/script&gt;&lt;/div&gt;&lt;/body&gt;&lt;/html>);
+const resultsPage = <!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;style&gt; body{margin:0;font-family:Arial;background:linear-gradient(135deg,#7a8cff,#8e6cff);min-height:100vh;padding:20px;color:white;box-sizing:border-box} .top{background:linear-gradient(90deg,#4a2cc8,#8e3cff);border-radius:20px;padding:20px;display:flex;justify-content:space-between;align-items:center} .num{font-size:56px;font-weight:bold}.card{background:#0f172a;border-radius:20px;padding:20px;margin:15px 0} .bar{height:8px;background:#2a344a;border-radius:10px;margin-top:10px;overflow:hidden}.fill{height:100%;border-radius:10px;transition:width 0.5s} .btn{padding:12px 20px;background:white;color:#7a3cff;border:none;border-radius:12px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block;margin-top:15px} &lt;/style&gt;&lt;/head&gt;&lt;body&gt; &lt;h1&gt;MajorTech&lt;br&gt;Live Results&lt;/h1&gt; &lt;div class="top"&gt;&lt;div&gt;&lt;small&gt;TOTAL VOTES CAST&lt;/small&gt;&lt;div class="num" id="total"&gt;0&lt;/div&gt;&lt;/div&gt;&lt;div style="background:#3cff8a;color:#0f172a;padding:6px 12px;border-radius:20px;font-size:12px"&gt;ELECTION IN PROGRESS&lt;/div&gt;&lt;/div&gt; &lt;div id="list"&gt;&lt;/div&gt; &lt;a href="/" class="btn"&gt;← Back to Vote&lt;/a&gt; &lt;script&gt; async function load(){ let r=await fetch('/results-data');let d=await r.json(); document.getElementById('total').innerText=d.total; let html=''; for(let k of ["Candidate A","Candidate B","Candidate C"]){ let v=d.votes[k]||0; let pct=d.total?Math.round(v*100/d.total):0; let color=k=='Candidate A'?'#3bc7ff':k=='Candidate B'?'#b99cff':'#ff7a8a'; let letter=k.split(' ')[1]; html+='&lt;div class="card"&gt;&lt;div style="display:flex;justify-content:space-between;align-items:center"&gt;&lt;div style="display:flex;align-items:center;gap:12px"&gt;&lt;div style="background:'+color+';width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:white"&gt;'+letter+'&lt;/div&gt;&lt;b&gt;'+k+'&lt;/b&gt;&lt;/div&gt;&lt;b style="font-size:28px"&gt;'+pct+'%&lt;/b&gt;&lt;/div&gt;&lt;div class="bar"&gt;&lt;div class="fill" style="width:'+pct+'%;background:'+color+'"&gt;&lt;/div&gt;&lt;/div&gt;&lt;small&gt;'+v+' VOTES&lt;/small&gt;&lt;/div&gt;'; } document.getElementById('list').innerHTML=html; } load(); setInterval(load,2000); &lt;/script&gt;&lt;/body&gt;&lt;/html>;
+
+const loginPage = <!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;style&gt; body{margin:0;background:linear-gradient(135deg,#7a8cff,#8e6cff);height:100vh;display:flex;justify-content:center;align-items:center;font-family:Arial} .card{background:white;padding:35px;border-radius:24px;width:90%;max-width:360px;text-align:center}input{width:100%;padding:14px;border-radius:12px;border:1px solid #ddd;margin:15px 0;box-sizing:border-box} button{width:100%;padding:14px;background:#7a3cff;color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer} &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="card"&gt;&lt;h2&gt;Faculty Login&lt;/h2&gt;&lt;p&gt;Enter Dashboard Password&lt;/p&gt;&lt;input id="pw" type="password" placeholder="••••••••"&gt;&lt;button onclick="check()"&gt;View Live Results&lt;/button&gt;&lt;p id="e" style="color:red"&gt;&lt;/p&gt;&lt;/div&gt;&lt;script&gt; function check(){if(document.getElementById('pw').value==='admin123') location.href='/results'; else document.getElementById('e').innerText='Wrong password - try admin123';} &lt;/script&gt;&lt;/body&gt;&lt;/html>;
+
+app.get('/', (req,res)=>res.send(votePage));
+app.get('/table1', (req,res)=>res.send(votePage));
+app.get('/dashboard', (req,res)=>res.send(loginPage));
+app.get('/results', (req,res)=>res.send(resultsPage));
+app.get('/results-data', (req,res)=>res.json({votes,total}));
+app.post('/vote', (req,res)=>{
+const {phone,candidate}=req.body;
+if(!phone||!candidate) return res.json({error:"Enter phone"});
+if(voters.has(phone)) return res.json({error:"This phone already voted!"});
+if(votes[candidate]===undefined) return res.json({error:"Invalid candidate"});
+votes[candidate]; total; voters.add(phone);
+res.json({success:true});
 });
 
-app.get('/table2', (req,res) => {
-res.send(&lt;html&gt;&lt;head&gt;&lt;title&gt;TABLE 2&lt;/title&gt; &lt;style&gt;body{font-family:Arial;background:#fff7ed;padding:20px}.box{background:white;max-width:400px;margin:auto;padding:30px;border-radius:10px;box-shadow:0 2px 10px #0002} input,select{width:100%;padding:12px;margin:10px 0} button{width:100%;padding:12px;background:#ea580c;color:white;border:0;border-radius:6px;font-size:16px}&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;div class="box"&gt;&lt;h2 style="color:#ea580c"&gt;TABLE 2 - Vote&lt;/h2&gt; &lt;input id="token" placeholder="Paste Token LIB-XXXXX" /&gt; &lt;select id="cand"&gt;&lt;option&gt;Candidate A&lt;/option&gt;&lt;option&gt;Candidate B&lt;/option&gt;&lt;option&gt;Candidate C&lt;/option&gt;&lt;/select&gt; &lt;button onclick="vote()"&gt;Vote Now&lt;/button&gt; &lt;div id="out" style="margin-top:20px;font-weight:bold"&gt;&lt;/div&gt; &lt;script&gt; async function vote(){ const token=document.getElementById('token').value; const candidate=document.getElementById('cand').value; const r=await fetch('/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,candidate})}); const d=await r.json(); document.getElementById('out').innerHTML = d.success? 'VOTE SUCCESS! '+d.candidate : 'Error: '+d.error; } &lt;/script&gt;&lt;/div&gt;&lt;/body&gt;&lt;/html>);
-});
-
-app.get('/dashboard', (req,res) => {
-res.send(&lt;html&gt;&lt;head&gt;&lt;title&gt;Dashboard&lt;/title&gt;&lt;meta http-equiv="refresh" content="3"&gt; &lt;style&gt;body{font-family:Arial;padding:20px}.card{border:1px solid #ddd;padding:15px;margin:10px 0;border-radius:8px}&lt;/style&gt; &lt;/head&gt;&lt;body&gt;&lt;h2&gt;Dashboard - Live Results&lt;/h2&gt; &lt;div class="card"&gt;Candidate A: ${votes["Candidate A"]} votes</div>
-<div class="card">Candidate B: ${votes["Candidate B"]} votes&lt;/div&gt; &lt;div class="card"&gt;Candidate C: ${votes["Candidate C"]} votes</div>
-<div>Total Tokens: ${Object.keys(tokens).length}&lt;/div&gt; &lt;/body&gt;&lt;/html>);
-});
-
-app.post('/api/generate-token', (req,res) => {
-const {phone} = req.body;
-if(!phone) return res.json({error:'Phone required'});
-if(usedPhones.has(phone)) return res.json({error:'Phone already used'});
-const token = 'LIB-'+Math.random().toString(36).substr(2,5).toUpperCase();
-tokens[token]= {phone, used:false};
-usedPhones.add(phone);
-res.json({token});
-});
-
-app.post('/api/vote', (req,res) => {
-const {token,candidate} = req.body;
-if(!tokens[token]) return res.json({error:'Invalid token'});
-if(tokens[token].used) return res.json({error:'Token already used'});
-tokens[token].used=true;
-if(votes[candidate]!==undefined) votes[candidate]++;
-res.json({success:true,candidate});
-});
-
-if (require.main === module) {
-app.listen(3000, ()=>console.log('Local'));
-}
 module.exports = app;
