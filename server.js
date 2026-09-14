@@ -34,7 +34,8 @@ votedPhones.clear();
 totalVotes = 0;
 res.json({ success: true, message: 'Election reset!' });
 });
-app.listen(PORT, '0.0.0.0', function() {
-console.log("MajorTech Live Voting running on port " + PORT);
-console.log("Server is LIVE");
-});
+// Fix for Vercel
+if (require.main === module) {
+app.listen(process.env.PORT || 3000, () => console.log('running'));
+}
+module.exports = app;
