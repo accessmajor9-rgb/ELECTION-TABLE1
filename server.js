@@ -84,6 +84,14 @@ let body="\x3cdiv class='card'\x3e\x3cdiv class='card-body' style='padding:40px;
 return res.send(pageWrap(body));
 }
 });
-
 app.get('/results', function(req,res){res.json(votes);});
-app.listen(PORT,'0.0.0.0',function(){console.log('BEAUTIFUL MAJORTECH LIVE: http://10.69.1.152:'+PORT);});
+app.get('/api/results', function(req,res){
+let total = (votes.A||0)+(votes.B||0)+(votes.C||0);
+res.json({counts:votes,total:total});
+});
+
+if (require.main === module) {
+let PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', function(){console.log('BEAUTIFUL MAJORTECH LIVE: http://10.69.1.152:'+PORT);});
+}
+module.exports = app;
