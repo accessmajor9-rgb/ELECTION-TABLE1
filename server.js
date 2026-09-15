@@ -1,7 +1,7 @@
 const express = require('express');
-const cors = require('cors');
+
 const app = express();
-app.use(cors());
+
 app.use(express.json());
 
 let votes = { "Candidate A": 0, "Candidate B": 0, "Candidate C": 0 };
