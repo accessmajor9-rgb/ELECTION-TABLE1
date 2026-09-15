@@ -10,7 +10,7 @@ let usedTokens = new Set();
 const ADMIN_KEY = "Major2025!"; // YOUR SECRET KEY
 
 app.get('/', (req, res) => {
-  res.send(`
+  res.send(`<!DOCTYPE html><html><head><meta charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial;background:linear-gradient(135deg,#7b8cff,#5e2cff 70%,#4a1ac7);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
 .card{width:100%;max-width:420px;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.3)}
@@ -133,15 +133,18 @@ app.get('/admin', (req, res) => {
   <div class="card"><h2>MajorTech Admin</h2><div id="d">Loading...</div><br>
   <button onclick="if(confirm('WIPE ALL?'))location.href='/admin/reset?key=${ADMIN_KEY}'" class="danger">RESET ALL</button>
   <button onclick="location.href='/results?key=${ADMIN_KEY}'" style="background:#7a3bff;color:#fff;margin-left:8px">View Results</button>
-  </div>
+
   <script>
   fetch("/api/results").then(r=>r.json()).then(d=>{
     let h="<b>Total:</b> "+d.total+"<br><b>Used:</b> "+d.used+"<br><hr><b>Votes:</b><br>";
     for(let k in d.votes){h+=k+": "+d.votes[k]+"<br>"}h+="<hr><b>Verified IDs:</b><br>";
     if(d.verified){for(let k in d.verified){h+=k+" => "+d.verified[k]+"<br>"}}
-    document.getElementById("d").innerHTML=h;
-  })
-  </script>`);
+    document.getElementById("d").innerHTML=h; 
+ }
+</div>
+</script>
+</body></html>
+`);
 });
 
 app.get('/admin/reset', (req, res) => {
