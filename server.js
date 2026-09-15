@@ -10,7 +10,7 @@ let usedTokens = new Set();
 const ADMIN_KEY = "Major2025!"; // YOUR SECRET KEY
 
 app.get('/', (req, res) => {
-  res.send(`<!DOCTYPE html><html><head><meta charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial;background:linear-gradient(135deg,#7b8cff,#5e2cff 70%,#4a1ac7);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
 .card{width:100%;max-width:420px;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.3)}
