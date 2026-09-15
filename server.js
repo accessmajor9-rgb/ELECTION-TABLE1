@@ -112,8 +112,13 @@ function load(){fetch("/api/results").then(r=>r.json()).then(d=>{let tot=d.total
 app.get('/success', (req, res) => {
   let c = req.query.c || 'A';
   res.send(`
-  <style>body{margin:0;font-family:Arial;background:#0f1e33;color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.card{width:100%;max-width:380px;background:#1a2b4a;border-radius:24px;padding:28px;text-align:center}.check{width:80px;height:80px;background:#00e676;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 16px;color:#000}</style>
-  <div class="card"><div class="check">✓</div><div style="font-size:24px;font-weight:900">Vote Successful!</div><div style="margin-top:8px;color:#a98bff">You voted for Candidate ${c}</div><div style="margin-top:18px;padding:14px;background:#0f1e33;border-radius:14px;font-size:13px;color:#8aa0c6">Your vote is secured. Please leave the booth. Results are for admin only.</div><div style="margin-top:18px;font-size:12px;opacity:.5">MajorTech Election System</div></div>
+  <style>body{margin:0;font-family:Arial;background:#0f1e33;color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.card{width:100%;max-width:380px;background:#1a2b4a;border-radius:24px;padding:28px;text-align:center}.check{width:80px;height:80px;background:#00e676;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 16px;color:#000}a{color:#8aa0c6;text-decoration:none;font-size:12px}</style>
+  <div class="card"><div class="check">✓</div><div style="font-size:24px;font-weight:900">Vote Successful!</div><div style="margin-top:8px;color:#a98bff">You voted for Candidate ${c}</div><div style="margin-top:18px;padding:14px;background:#0f1e33;border-radius:14px;font-size:13px;color:#8aa0c6">Your vote is secured. Please leave the booth. Results are for admin only.</div>
+  <div style="margin-top:22px;display:flex;justify-content:center;gap:18px">
+    <a href="/results" style="border:1px solid #2a3b5a;padding:8px 14px;border-radius:20px">Admin / Faculty</a>
+    <a href="/" style="border:1px solid #2a3b5a;padding:8px 14px;border-radius:20px">Table 1</a>
+  </div>
+  <div style="margin-top:14px;font-size:10px;opacity:.4">MajorTech Election System</div></div>
   `);
 });
 
