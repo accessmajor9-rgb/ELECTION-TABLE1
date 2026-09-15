@@ -6,26 +6,44 @@ app.use(express.json());
 
 let votes = { "Candidate A": 0, "Candidate B": 0, "Candidate C": 0 };
 let total = 0;
-let voters = new Set();
+let voted = new Set();
 
-const votePage = <!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;style&gt; body{margin:0;font-family:Arial;background:linear-gradient(135deg,#7a8cff,#8e6cff);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:15px} .card{background:white;border-radius:24px;padding:30px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(0,0,0,0.2);text-align:center} input,select{width:100%;padding:14px;margin:10px 0;border-radius:12px;border:1px solid #ddd;box-sizing:border-box;font-size:15px} button{width:100%;padding:14px;background:#7a3cff;color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:16px} a{color:#7a3cff;text-decoration:none;font-size:14px;display:block;margin-top:15px} &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="card"&gt; &lt;h1&gt;MajorTech Voting&lt;/h1&gt;&lt;p&gt;Secure Student Election&lt;/p&gt; &lt;input id="phone" placeholder="Enter Phone Number"&gt; &lt;select id="cand"&gt;&lt;option&gt;Candidate A&lt;/option&gt;&lt;option&gt;Candidate B&lt;/option&gt;&lt;option&gt;Candidate C&lt;/option&gt;&lt;/select&gt; &lt;button onclick="vote()"&gt;Cast Vote&lt;/button&gt; &lt;p id="msg" style="color:red"&gt;&lt;/p&gt; &lt;a href="/dashboard"&gt;Faculty Login → Live Results&lt;/a&gt; &lt;/div&gt;&lt;script&gt; async function vote(){ let p=document.getElementById('phone').value; let c=document.getElementById('cand').value; if(!p){document.getElementById('msg').innerText='Enter phone';return;} let r=await fetch('/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:p,candidate:c})}); let d=await r.json(); if(d.error) document.getElementById('msg').innerText=d.error; else {document.getElementById('msg').style.color='green';document.getElementById('msg').innerText='Vote counted!'; setTimeout(()=&gt;location.href='/results',1000);} } &lt;/script&gt;&lt;/body&gt;&lt;/html>;
+function layout(t,b){return \x3c!DOCTYPE html\x3e\x3chtml\x3e\x3chead\x3e\x3cmeta name="viewport" content="width=device-width,initial-scale=1"\x3e\x3ctitle\x3e${t}\x3c/title\x3e\x3cstyle\x3ebody{font-family:Arial;background:#f0e6ff;margin:0;padding:15px;text-align:center}.box{background:#fff;max-width:420px;margin:20px auto;padding:20px;border-radius:16px}h1{color:#6a00ff}button{width:100%;padding:14px;margin:8px 0;background:#6a00ff;color:#fff;border:none;border-radius:10px;font-size:18px;font-weight:bold}input{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:10px;box-sizing:border-box}a{color:#6a00ff}\x3c/style\x3e\x3c/head\x3e\x3cbody\x3e${b}\x3c/body\x3e\x3c/html\x3e;}
 
-const resultsPage = <!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;style&gt; body{margin:0;font-family:Arial;background:linear-gradient(135deg,#7a8cff,#8e6cff);min-height:100vh;padding:20px;color:white;box-sizing:border-box} .top{background:linear-gradient(90deg,#4a2cc8,#8e3cff);border-radius:20px;padding:20px;display:flex;justify-content:space-between;align-items:center} .num{font-size:56px;font-weight:bold}.card{background:#0f172a;border-radius:20px;padding:20px;margin:15px 0} .bar{height:8px;background:#2a344a;border-radius:10px;margin-top:10px;overflow:hidden}.fill{height:100%;border-radius:10px;transition:width 0.5s} .btn{padding:12px 20px;background:white;color:#7a3cff;border:none;border-radius:12px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block;margin-top:15px} &lt;/style&gt;&lt;/head&gt;&lt;body&gt; &lt;h1&gt;MajorTech&lt;br&gt;Live Results&lt;/h1&gt; &lt;div class="top"&gt;&lt;div&gt;&lt;small&gt;TOTAL VOTES CAST&lt;/small&gt;&lt;div class="num" id="total"&gt;0&lt;/div&gt;&lt;/div&gt;&lt;div style="background:#3cff8a;color:#0f172a;padding:6px 12px;border-radius:20px;font-size:12px"&gt;ELECTION IN PROGRESS&lt;/div&gt;&lt;/div&gt; &lt;div id="list"&gt;&lt;/div&gt; &lt;a href="/" class="btn"&gt;← Back to Vote&lt;/a&gt; &lt;script&gt; async function load(){ let r=await fetch('/results-data');let d=await r.json(); document.getElementById('total').innerText=d.total; let html=''; for(let k of ["Candidate A","Candidate B","Candidate C"]){ let v=d.votes[k]||0; let pct=d.total?Math.round(v*100/d.total):0; let color=k=='Candidate A'?'#3bc7ff':k=='Candidate B'?'#b99cff':'#ff7a8a'; let letter=k.split(' ')[1]; html+='&lt;div class="card"&gt;&lt;div style="display:flex;justify-content:space-between;align-items:center"&gt;&lt;div style="display:flex;align-items:center;gap:12px"&gt;&lt;div style="background:'+color+';width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:white"&gt;'+letter+'&lt;/div&gt;&lt;b&gt;'+k+'&lt;/b&gt;&lt;/div&gt;&lt;b style="font-size:28px"&gt;'+pct+'%&lt;/b&gt;&lt;/div&gt;&lt;div class="bar"&gt;&lt;div class="fill" style="width:'+pct+'%;background:'+color+'"&gt;&lt;/div&gt;&lt;/div&gt;&lt;small&gt;'+v+' VOTES&lt;/small&gt;&lt;/div&gt;'; } document.getElementById('list').innerHTML=html; } load(); setInterval(load,2000); &lt;/script&gt;&lt;/body&gt;&lt;/html>;
-
-const loginPage = <!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;&lt;style&gt; body{margin:0;background:linear-gradient(135deg,#7a8cff,#8e6cff);height:100vh;display:flex;justify-content:center;align-items:center;font-family:Arial} .card{background:white;padding:35px;border-radius:24px;width:90%;max-width:360px;text-align:center}input{width:100%;padding:14px;border-radius:12px;border:1px solid #ddd;margin:15px 0;box-sizing:border-box} button{width:100%;padding:14px;background:#7a3cff;color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer} &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="card"&gt;&lt;h2&gt;Faculty Login&lt;/h2&gt;&lt;p&gt;Enter Dashboard Password&lt;/p&gt;&lt;input id="pw" type="password" placeholder="••••••••"&gt;&lt;button onclick="check()"&gt;View Live Results&lt;/button&gt;&lt;p id="e" style="color:red"&gt;&lt;/p&gt;&lt;/div&gt;&lt;script&gt; function check(){if(document.getElementById('pw').value==='admin123') location.href='/results'; else document.getElementById('e').innerText='Wrong password - try admin123';} &lt;/script&gt;&lt;/body&gt;&lt;/html>;
-
-app.get('/', (req,res)=>res.send(votePage));
-app.get('/table1', (req,res)=>res.send(votePage));
-app.get('/dashboard', (req,res)=>res.send(loginPage));
-app.get('/results', (req,res)=>res.send(resultsPage));
-app.get('/results-data', (req,res)=>res.json({votes,total}));
-app.post('/vote', (req,res)=>{
-const {phone,candidate}=req.body;
-if(!phone||!candidate) return res.json({error:"Enter phone"});
-if(voters.has(phone)) return res.json({error:"This phone already voted!"});
-if(votes[candidate]===undefined) return res.json({error:"Invalid candidate"});
-votes[candidate]; total; voters.add(phone);
-res.json({success:true});
+app.get('/',(req,res)=>{
+res.send(layout('Vote',\x3ch1\x3eMajorTech - TABLE 1\x3c/h1\x3e\x3cdiv class="box"\x3e\x3ch2\x3eVote\x3c/h2\x3e\x3cbutton onclick="v('Candidate A')"\x3eCandidate A\x3c/button\x3e\x3cbutton onclick="v('Candidate B')"\x3eCandidate B\x3c/button\x3e\x3cbutton onclick="v('Candidate C')"\x3eCandidate C\x3c/button\x3e\x3cdiv id="m" style="margin-top:12px;font-weight:bold"\x3e\x3c/div\x3e\x3cp\x3e\x3ca href="/results"\x3eLive Results\x3c/a\x3e | \x3ca href="/admin"\x3eAdmin\x3c/a\x3e\x3c/p\x3e\x3c/div\x3e\x3cscript\x3easync function v(c){let r=await fetch('/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({candidate:c})});let d=await r.json();document.getElementById('m').innerText=d.message}\x3c/script\x3e));
 });
 
-module.exports = app;
+app.get('/results',(req,res)=>{
+res.send(layout('Results',\x3ch1\x3eTABLE 1 Results\x3c/h1\x3e\x3cdiv class="box" id="b"\x3eLoading...\x3c/div\x3e\x3cp\x3e\x3ca href="/"\x3eBack to Vote\x3c/a\x3e\x3c/p\x3e\x3cscript\x3easync function load(){let r=await fetch('/api/results');let d=await r.json();let h='Total Votes: '+d.total+'\x3cbr\x3e\x3cbr\x3e';for(let k in d.votes){h+=k+': '+d.votes[k]+'\x3cbr\x3e'}document.getElementById('b').innerHTML=h}load();setInterval(load,3000)\x3c/script\x3e));
+});
+
+app.get('/admin',(req,res)=>{
+res.send(layout('Admin',\x3ch1\x3eAdmin Login\x3c/h1\x3e\x3cdiv class="box"\x3e\x3cinput id="u" placeholder="Username"\x3e\x3cinput id="p" type="password" placeholder="Password"\x3e\x3cbutton onclick="login()"\x3eLogin\x3c/button\x3e\x3cdiv id="msg"\x3e\x3c/div\x3e\x3c/div\x3e\x3cscript\x3easync function login(){let r=await fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('u').value,password:document.getElementById('p').value})});let d=await r.json();if(d.ok){location.href='/admin/dashboard'}else{document.getElementById('msg').innerText=d.message}}\x3c/script\x3e));
+});
+
+app.get('/admin/dashboard',(req,res)=>{
+res.send(layout('Dashboard',\x3ch1\x3eAdmin Dashboard\x3c/h1\x3e\x3cdiv class="box" id="d"\x3e\x3c/div\x3e\x3cp\x3e\x3ca href="/"\x3eHome\x3c/a\x3e | \x3ca href="/admin/reset" onclick="return confirm('Reset all votes?')"\x3eReset Votes\x3c/a\x3e\x3c/p\x3e\x3cscript\x3easync function load(){let r=await fetch('/api/results');let d=await r.json();document.getElementById('d').innerHTML='Total: '+d.total+'\x3cbr\x3eA: '+d.votes['Candidate A']+'\x3cbr\x3eB: '+d.votes['Candidate B']+'\x3cbr\x3eC: '+d.votes['Candidate C']}load()\x3c/script\x3e));
+});
+
+app.get('/admin/reset',(req,res)=>{
+votes={"Candidate A":0,"Candidate B":0,"Candidate C":0};total=0;voted.clear();
+res.redirect('/admin/dashboard');
+});
+
+app.post('/vote',(req,res)=>{
+let ip=req.headers['x-forwarded-for']||req.socket.remoteAddress;
+if(voted.has(ip)) return res.json({message:'You already voted!'});
+let c=req.body.candidate;
+if(votes[c]!==undefined){votes[c];total;voted.add(ip);return res.json({message:'Vote counted for '+c});}
+res.json({message:'Invalid'});
+});
+
+app.post('/admin/login',(req,res)=>{
+let {username,password}=req.body;
+if(username==='admin' && password==='majortech123') return res.json({ok:true});
+res.json({ok:false,message:'Wrong login'});
+});
+
+app.get('/api/results',(req,res)=>res.json({votes,total}));
+module.exports=app;
